@@ -3,7 +3,7 @@ doubleDouble x = (\dubs -> dubs*2) x*2
 -- >>> doubleDouble 6
 -- 24
 
--- a TERRIBLE implementation, we make the same severals computation for nothinga TERRIBLE implementation, we make the same computation several times for nothing
+-- a TERRIBLE implementation, we make the same computation several times for nothing
 sumSquareOrSquareSum x y = if (x^2+y^2) > ((x+y)^2)
                            then	(x^2+x^2)
                            else	((x+y)^2)
