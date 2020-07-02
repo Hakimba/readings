@@ -45,3 +45,21 @@ madeBy :: StoreItem -> String
 madeBy (BookItem book) = (bookTitle book) + "was made by : " + (show (author book))
 madeBy (RecordItem record) = (recordTitle record) + "was made by : " + (show (artist record))
 
+-- Q16.1
+
+data Pamphlet = Pamphlet {
+  pampTitle :: String
+  ,description :: String
+  ,contact :: String
+  }
+
+-- StoreItem = ... | PamphletItem Pamphlet
+-- price (PamphletItem p) = 0
+
+-- Q16.2
+
+data Shape = Circle | Square | Rectangle
+
+perimeter :: Shape -> Int
+perimeter Circle r = 2 * pi * r
+perimeter ....
