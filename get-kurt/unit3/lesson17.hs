@@ -93,13 +93,16 @@ associativity_law a b c = (a <> b) <> c == a <> (b <> c)
 -- Third law : associativity of mappend
 -- Fourth law : mconcat = foldr mappend mempty
 
-type Events = [String]
-type Probs = [Double]
+--type Events = [String]
+--type Probs = [Double]
+
+data Events = Events [String]
+data Probs = Probs [Double]
 
 data PTable = PTable Events Probs
 
 createTable :: Events -> Probs -> PTable
-createTable events probs = PTable events normalizedProbs where
+createTable (Events events) (Probs probs) = PTable (Events events) (Probs normalizedProbs) where
   totalProbs = sum probs
   normalizedProbs = map (\x -> x / totalProbs) probs
 
@@ -107,10 +110,10 @@ showPair :: String -> Double -> String
 showPair event prob = mconcat [event, " | ", show prob, "\n"]
 
 instance Show PTable where
-  show (PTable events probs) = mconcat pairs
+  show (PTable (Events events) (Probs probs)) = mconcat pairs
     where pairs = zipWith showPair events probs
 
--- >>> createTable ["Pile","Face"] [0.5,0.5]
+-- >>> createTable (Events ["Pile","Face"]) (Probs [0.5,0.5])
 -- Pile | 0.5
 -- Face | 0.5
 
@@ -125,34 +128,49 @@ cartesianProduct func l1 l2 = zipWith func newL1 cycledL2
 -- [1,2,3,2,4,6,3,6,9]
 
 combineEvents :: Events -> Events -> Events
-combineEvents e1 e2 = cartesianProduct combiner e1 e2 where
+combineEvents (Events e1) (Events e2) = Events $ cartesianProduct combiner e1 e2 where
   combiner = (\x y -> mconcat [x,"-",y])
 
 combineProbs :: Probs -> Probs -> Probs
-combineProbs p1 p2 = cartesianProduct (*) p1 p2
+combineProbs (Probs p1) (Probs p2) = Probs $ cartesianProduct (*) p1 p2
+
+
+instance Semigroup Events where
+  (<>) = combineEvents
+
+instance Semigroup Probs where
+  (<>) = combineProbs
+
+instance Monoid Events where
+  mempty = Events []
+  mappend = (<>)
+
+instance Monoid Probs where
+  mempty = Probs []
+  mappend = (<>)
 
 instance Semigroup PTable where
-  (<>) ptable1 (PTable [] []) = ptable1
-  (<>) (PTable [] []) ptable2 = ptable2
-  (<>) (PTable e1 p1) (PTable e2 p2)  = createTable newEvents newProbs
-    where newEvents = combineEvents e1 e2
-          newProbs = combineProbs p1 p2
+  (<>) ptable1 (PTable (Events []) (Probs [])) = ptable1
+  (<>) (PTable (Events []) (Probs [])) ptable2 = ptable2
+  (<>) (PTable e1 p1) (PTable e2 p2)  = createTable (mappend e1 e2) (mappend p1 p2)
 
--- >>> let coin = createTable ["Pile","Face"] [0.5,0.5]
+-- >>> let coin = createTable (Events ["Pile","Face"]) (Probs [0.5,0.5])
 -- >>> coin
 -- Pile | 0.5
 -- Face | 0.5
--- >>> coin <> coin
+-- >>> mappend coin coin
 -- Pile-Pile | 0.25
 -- Pile-Face | 0.25
 -- Face-Pile | 0.25
 -- Face-Face | 0.25
 
+
+
 instance Monoid PTable where
-  mempty = PTable [] []
+  mempty = PTable mempty mempty
   mappend = (<>)
 
--- >>> let coin = createTable ["Pile","Face"] [0.5,0.5] 
+-- >>> let coin = createTable (Events ["Pile","Face"]) (Probs [0.5,0.5]) 
 -- >>> mconcat [coin,coin,coin]
 -- Pile-Pile-Pile | 0.125
 -- Pile-Pile-Face | 0.125
@@ -174,4 +192,4 @@ instance Monoid Color where
 -- Yellow
 
 -- Q17.2
-
+-- already done
